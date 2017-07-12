@@ -26,7 +26,7 @@
 }
 - (void)show:(id)item{
     UIView *keyboard = [self findKeyboard];
-    NSArray *array =  [self subviewsOfView:keyboard type:@"UIKBKeyView"];
+    NSArray *array =  [self subviewsOfView:keyboard type:@"KBKeyView"];
     
     for (UIView *view in array) {
         UIButton *newButrton = [self newButtonWithOld:view];
@@ -36,13 +36,13 @@
 
 - (UIView *)findKeyboard {
     for (UIWindow* window in [UIApplication sharedApplication].windows) {
-        UIView *inputSetContainer = [self viewWithPrefix:@"<UIInputSetContainerView" inView:window];
+        UIView *inputSetContainer = [self viewWithSuffix:@"InputSetContainerView" inView:window];
         if (inputSetContainer) {
-            UIView *inputSetHost = [self viewWithPrefix:@"<UIInputSetHostView" inView:inputSetContainer];
+            UIView *inputSetHost = [self viewWithSuffix:@"InputSetHostView" inView:inputSetContainer];
             if (inputSetHost) {
-                UIView *kbinputbackdrop = [self viewWithPrefix:@"<_UIKBCompatInput" inView:inputSetHost];
+                UIView *kbinputbackdrop = [self viewWithSuffix:@"KBCompatInputView" inView:inputSetHost];
                 if (kbinputbackdrop) {
-                    UIView *theKeyboard = [self viewWithPrefix:@"<UIKeyboard" inView:kbinputbackdrop];
+                    UIView *theKeyboard = [self viewWithSuffix:@"KeyboardAutomatic" inView:kbinputbackdrop];
                     return theKeyboard;
                 }
             }
@@ -51,9 +51,13 @@
     return nil;
 }
 
-- (UIView *)viewWithPrefix:(NSString *)prefix inView:(UIView *)view {
+- (UIView *)viewWithSuffix:(NSString *)suffix inView:(UIView *)view {
     for (UIView *subview in view.subviews) {
-        if ([[subview description] hasPrefix:prefix]) {
+        NSString *viewName = NSStringFromClass(subview.class);
+        if ([viewName hasPrefix:@"UI"] && [viewName hasSuffix:suffix]) {
+            return subview;
+        }
+        if ([viewName hasPrefix:@"_UI"] && [viewName hasSuffix:suffix]) {
             return subview;
         }
     }
@@ -65,7 +69,8 @@
     
     NSMutableArray *array = [NSMutableArray array];
     for (UIView *subview in [view subviews]) {
-        if ([[subview description] hasPrefix:[NSString stringWithFormat:@"<%@",type]]) {
+         NSString *viewName = NSStringFromClass(subview.class);
+        if ([[viewName description] hasPrefix:@"UI"] && [[viewName description] hasSuffix:type]) {
             [array addObject:subview];
         }else{
            [array addObjectsFromArray:[self subviewsOfView:subview type:type]];
